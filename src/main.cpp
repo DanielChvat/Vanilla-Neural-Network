@@ -8,7 +8,7 @@ int main(void){
     srand(time(0));
     
     int nLayers = 3;
-    int LayerNodeCounts[] = {754, 3, 10};
+    int LayerNodeCounts[] = {754, 1000, 10};
     int expectedOutputs[] = {0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
 
     NeuralNetwork NN(nLayers, LayerNodeCounts);

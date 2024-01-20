@@ -2,6 +2,7 @@
 #include <Node.hpp>
 #include <iostream>
 #include <cstdlib>
+#include <random>
 #include <cmath>
 
 
@@ -43,12 +44,14 @@ Layer::~Layer(){
 }
 
 void Layer::init(){
+    std::default_random_engine gen;
+    std::uniform_real_distribution<float> dist(0.0, 1.0);
     for(int i=0; i < NodeCount; i++){
-        //Nodes[i].nodeBias = (rand() % 101) / 100.0f;
-        Nodes[i].nodeBias = 0.5f;
+        Nodes[i].nodeBias = dist(gen);
+        //Nodes[i].nodeBias = 0.00005f;
         for(int j=0; j < NextNodeCount; j++){
-            //NodeWeights[i][j] = (rand() % 101) / 100.0f;
-            NodeWeights[i][j] = 0.5f;
+            NodeWeights[i][j] = dist(gen);
+            //NodeWeights[i][j] = 0.00005f;
         }
     }
 }
