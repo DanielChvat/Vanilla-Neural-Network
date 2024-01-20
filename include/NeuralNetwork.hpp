@@ -59,5 +59,5 @@ void NeuralNetwork::getCost(int expected[]){
 }
 
 void Learn(trainData * const LearnData, int BatchSize){
-    
+    //Todo Add Learn Functionality
 }
