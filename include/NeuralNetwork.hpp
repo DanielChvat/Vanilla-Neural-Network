@@ -6,6 +6,7 @@ class NeuralNetwork{
     public:
         Layer **Layers;
         double ***WeightGradients;
+        double **BiasGradients;
         int LayerCount; 
         double NetworkCost;
         NeuralNetwork(int, int []);
@@ -18,9 +19,11 @@ class NeuralNetwork{
 NeuralNetwork::NeuralNetwork(int LayerCount, int LayerNodeCounts[]): LayerCount(LayerCount), NetworkCost(0) {
     Layers = new Layer*[LayerCount];
     WeightGradients = new double**[LayerCount];
+    BiasGradients = new double *[LayerCount];
     for(int i=0; i < LayerCount; i++){
         if(i != (LayerCount - 1)) Layers[i] = new Layer(LayerNodeCounts[i], LayerNodeCounts[i+1]);
         else Layers[i] = new Layer(LayerNodeCounts[i], 0);
+        BiasGradients[i] = new double [Layers[i]->NodeCount];
         WeightGradients[i] = new double*[Layers[i]->NodeCount];
         for(int j=0; j < Layers[i]->NodeCount; j++){
             WeightGradients[i][j] = new double[Layers[i]->NextNodeCount];
@@ -36,9 +39,11 @@ NeuralNetwork::~NeuralNetwork(){
         delete [] WeightGradients[i];
 
         delete Layers[i];
+        delete [] BiasGradients[i];
     }
     delete []WeightGradients;
     delete []Layers;
+    delete []BiasGradients;
 }
 
 void NeuralNetwork::getOutputs(int inputs[]){
