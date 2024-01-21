@@ -2,6 +2,7 @@
 
 class Node{
     public:
+    double WeightedValue;
     double activiationValue;
     double nodeBias;
     Node();

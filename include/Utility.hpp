@@ -1,6 +1,8 @@
 #pragma once
 #include <fstream>
 #include <string>
+#include <cmath>
+#include <Layer.hpp>
 #include <sstream>
 
 typedef 
@@ -78,3 +80,23 @@ void trainData::getImgCount(){
     file.close();
 }
 
+double activationFunction(double W){
+    return 1 / (1 + exp(-W));
+}
+
+double activationFunctionDerivative(double activationValue){
+    return activationValue * (1 - activationValue);
+}
+
+double costFunction(Layer *OutputLayer, int expected[]){
+    double cost = 0;
+    for(int i=0; i < OutputLayer->NodeCount; i++){
+        double difference = (OutputLayer->Nodes[i].activiationValue - expected[i]);
+        cost += difference * difference;
+    }
+    return cost;
+}
+
+double costFunctionDerivative(double activationValue, double expected){
+    return 2 * (activationValue - expected);
+}
