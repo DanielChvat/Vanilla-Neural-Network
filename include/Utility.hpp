@@ -8,7 +8,7 @@
 typedef 
 struct img{
     char label;
-    int bytes[784];
+    double bytes[784];
 } img;
 
 class trainData{
@@ -38,7 +38,7 @@ trainData::trainData(std::string filePath) : ImgCount(0), filePath(filePath){
         std::stringstream input(line);
         int j = 0;
         while(getline(input, token, ',')){
-            data[i].bytes[j++] = stoi(token);
+            data[i].bytes[j++] = stoi(token) / 255.0;
         }
         i++;
     }
@@ -62,7 +62,7 @@ trainData::trainData(std::string filePath, int dataSize) : ImgCount(0), filePath
         std::stringstream input(line);
         int j = 0;
         while(getline(input, token, ',')){
-            data[i].bytes[j++] = stoi(token);
+            data[i].bytes[j++] = stoi(token)/255.0;
         }
     }
     file.close();
@@ -81,22 +81,23 @@ void trainData::getImgCount(){
 }
 
 double activationFunction(double W){
-    return 1 / (1 + exp(-W));
+    return tanh(W);
 }
 
-double activationFunctionDerivative(double activationValue){
-    return activationValue * (1 - activationValue);
+double activationFunctionDerivative(double WeightedValue){
+    double z = cosh(WeightedValue);
+    return 1 / (z * z);
 }
 
 double costFunction(Layer *OutputLayer, int expected[]){
     double cost = 0;
     for(int i=0; i < OutputLayer->NodeCount; i++){
         double difference = (OutputLayer->Nodes[i].activiationValue - expected[i]);
-        cost += difference * difference;
+        cost += 0.5 * difference * difference;
     }
     return cost;
 }
 
 double costFunctionDerivative(double activationValue, double expected){
-    return 2 * (activationValue - expected);
+    return activationValue - expected;
 }

@@ -25,6 +25,7 @@ class Layer{
         void calculateLayerOutputs(Layer *);
         void UpdateGradients(Layer *);
         void ApplyGradients(double);
+        void ResetGradients();
 };
 
 Layer::Layer(int NodeCount, int NextNodeCount): NodeCount(NodeCount), NextNodeCount(NextNodeCount) {
@@ -60,14 +61,14 @@ Layer::~Layer(){
 
 void Layer::init(){
     std::mt19937 gen(time(0));
-    std::uniform_real_distribution<double> dist(-5.0, 5.0);
+    std::uniform_real_distribution<double> dist(-0.1, 0.1);
     for(int i=0; i < NodeCount; i++){
-        //Nodes[i].nodeBias = dist(gen);
-        Nodes[i].nodeBias = 1;
+        Nodes[i].nodeBias = dist(gen);
+        //Nodes[i].nodeBias = 1;
         //Nodes[i].nodeBias = 0.00005f;
         BiasGradients[i] = 0;
         for(int j=0; j < NextNodeCount; j++){
-            NodeWeights[i][j] = dist(gen);
+            //NodeWeights[i][j] = dist(gen);
             //NodeWeights[i][j] = 0.00005f;
             WeightGradients[i][j] = 0;
         }
@@ -103,5 +104,15 @@ void Layer::ApplyGradients(double LearningRate){
             NodeWeights[i][j] -= WeightGradients[i][j] * LearningRate;
         }
         Nodes[i].nodeBias -= BiasGradients[i] * LearningRate;
+    }
+}
+
+
+void Layer::ResetGradients(){
+    for(int i=0; i < NodeCount; i++){
+        BiasGradients[i] = 0;
+        for(int j = 0; j < NextNodeCount; j++){
+            WeightGradients[i][j] = 0;
+        }
     }
 }
