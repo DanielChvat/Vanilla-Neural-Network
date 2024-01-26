@@ -61,7 +61,7 @@ Layer::~Layer(){
 
 void Layer::init(){
     std::mt19937 gen(time(0));
-    std::uniform_real_distribution<double> dist(-0.1, 0.1);
+    std::uniform_real_distribution<double> dist(-0.000001, 0.000001);
     for(int i=0; i < NodeCount; i++){
         Nodes[i].nodeBias = dist(gen);
         //Nodes[i].nodeBias = 1;

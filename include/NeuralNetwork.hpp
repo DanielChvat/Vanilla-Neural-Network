@@ -1,6 +1,6 @@
 #pragma once
 #include <Layer.hpp>
-#include <iostream>
+#include <stdio.h>
 #include <Utility.hpp>
 
 extern "C++" double costFunction(Layer *, int);
@@ -18,8 +18,11 @@ class NeuralNetwork{
         void CalculateOutputLayerNodeValues(Layer *, int[]);
         void CalculateHiddenLayerNodeValues(Layer *, Layer *);
         void UpdateNetworkGradients(double [], int []);
-        void Train(trainData *, double, int);
+        void Train(trainData *, double, int, int);
+        void Train(trainData *, double, int, int, int []);
         void Train(double [], int[], double, int);
+        double getAccuracy(trainData *);
+        int getLabel(img);
         void UpdateGradients();
         void CreateExpected(int, int[]);
 };
@@ -97,17 +100,48 @@ void NeuralNetwork::CreateExpected(int label, int expected[]){
     }
 }
 
-void NeuralNetwork::Train(trainData *trainBatch, double LearningRate, int BatchSize){
-    for(int i=0; i < trainBatch->ImgCount; i++){
-        int expected[10];
-        CreateExpected(trainBatch->data[i].label, expected);
-        UpdateNetworkGradients(trainBatch->data[i].bytes, expected);
-        if(i % BatchSize == 0){
-            for(int i=0; i < LayerCount-1; i++){
-                Layers[i]->ApplyGradients(LearningRate / BatchSize);
-                Layers[i]->ResetGradients();
+void NeuralNetwork::Train(trainData *trainBatch, double LearningRate, int BatchSize, int epochs){
+    for(int e = 0; e < epochs; e++){
+        double totalCost = 0;
+        for(int i=0; i < trainBatch->ImgCount; i++){
+            int expected[10];
+            CreateExpected(trainBatch->data[i].label, expected);
+            UpdateNetworkGradients(trainBatch->data[i].bytes, expected);
+            if(i % BatchSize == 0 && i != 0){
+                for(int j=0; j < LayerCount-1; j++){
+                    Layers[j]->ApplyGradients(LearningRate / (BatchSize * epochs));
+                    Layers[j]->ResetGradients();
+                }
             }
         }
+        for(int k=0; k < trainBatch->ImgCount; k++){
+            getOutputs(trainBatch->data[k].bytes);
+            int expected[10];
+            CreateExpected(trainBatch->data[k].label, expected);
+            Cost(expected);
+            totalCost += NetworkCost;
+        }
+        printf("Epoch %d: %lf\n", e, totalCost/(double)trainBatch->ImgCount);
+        //std::cout << "Epoch:" << e << ": " << totalCost/((e+1) * trainBatch->ImgCount) << "\n";
+    }
+}
+
+void NeuralNetwork::Train(trainData *trainBatch, double LearningRate, int BatchSize, int epochs, int expectedOutputs[]){
+    for(int e = 0; e < epochs; e++){
+        for(int i=0; i < trainBatch->ImgCount; i++){
+            int expected[10];
+            CreateExpected(trainBatch->data[i].label, expected);
+            UpdateNetworkGradients(trainBatch->data[i].bytes, expected);
+            if(i % BatchSize == 0 && i != 0){
+                for(int j=0; j < LayerCount-1; j++){
+                    Layers[j]->ApplyGradients(LearningRate / (BatchSize * epochs));
+                    Layers[j]->ResetGradients();
+                }
+            }
+        }
+        getOutputs(trainBatch->data[73].bytes);
+        Cost(expectedOutputs);
+        printf("Epoch:%d:%lf\n", e, NetworkCost);
     }
 }
 void NeuralNetwork::Train(double trainData[], int expected[], double LearningRate, int epochs){
@@ -117,8 +151,43 @@ void NeuralNetwork::Train(double trainData[], int expected[], double LearningRat
             Layers[i]->ApplyGradients(LearningRate / epochs);
         }
         Cost(expected);
-        std::cout << "Cost Epoch:" << e << ": " << NetworkCost << std::endl;
+        std::cout << "Cost Epoch:" << e << ": " << NetworkCost << "\n";
     }
+}
+
+int NeuralNetwork::getLabel(img data){
+    getOutputs(data.bytes);
+    Layer *outputLayer = Layers[LayerCount-1];
+    double outputs[outputLayer->NodeCount];
+    for(int i = 0; i < outputLayer->NodeCount; i++){
+        outputs[i] = outputLayer->Nodes[i].activiationValue;
+    }
+
+    int label = 0;
+    double m = outputs[label];
+
+    for(int i=1; i < outputLayer->NodeCount; i++){
+        if(outputs[i] > m){
+            label = i;
+            m = outputs[i];
+        }
+    }
+    return label;
+}
+
+double NeuralNetwork::getAccuracy(trainData *testData){
+    int correct = 0;
+    for(int i=0; i < testData->ImgCount; i++){
+        int actual = testData->data[i].label;
+        int predicted = getLabel(testData->data[i]);
+        if(actual == predicted){
+            printf("Image %d: Correct\n", i);
+            correct++;
+        }else{
+            printf("Image %d: Incorrect\n", i);
+        }
+    }
+    return correct / (double)testData->ImgCount; 
 }
 
 
